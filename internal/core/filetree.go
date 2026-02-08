@@ -99,3 +99,18 @@ func createVirtualRoot(children []Node) *Dir {
 
 	return virtualRoot
 }
+
+func (ft *Filetree) FlattenTree() []Node {
+	var nodes []Node
+	var walk func(Node)
+	walk = func(n Node) {
+		nodes = append(nodes, n)
+		if dir, ok := n.(*Dir); ok {
+			for _, child := range dir.Children() {
+				walk(child)
+			}
+		}
+	}
+	walk(*ft.Root)
+	return nodes
+}

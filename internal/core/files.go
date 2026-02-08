@@ -33,3 +33,7 @@ func (d *Dir) Path() string {
 func (d *Dir) Name() string {
 	return d.name
 }
+
+func (d *Dir) Children() []Node {
+	return d.children
+}

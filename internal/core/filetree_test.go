@@ -276,3 +276,47 @@ func TestCreateVirtualRoot(t *testing.T) {
 		t.Error("expected virtual root to have no parent")
 	}
 }
+
+func TestFiletree_FlattenTree(t *testing.T) {
+	t.Run("flattens nested structure", func(t *testing.T) {
+		structure := map[string]interface{}{
+			"project": map[string]interface{}{
+				"src": map[string]interface{}{
+					"main.go":  "package main",
+					"utils.go": "package main",
+				},
+				"README.md": "# Project",
+			},
+		}
+		rootDir := setupNestedTestDir(t, structure)
+		projectPath := filepath.Join(rootDir, "project")
+
+		paths := []ParsedPath{{FullPath: projectPath, Kind: PathDir}}
+		tree, err := BuildFiletree(paths)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		nodes := tree.FlattenTree()
+
+		if len(nodes) != 5 {
+			t.Errorf("expected 5 nodes, got %d", len(nodes))
+		}
+	})
+
+	t.Run("flattens single file", func(t *testing.T) {
+		testFile := setupTestFile(t, "test.txt", "content")
+		paths := []ParsedPath{{FullPath: testFile, Kind: PathFile}}
+
+		tree, err := BuildFiletree(paths)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		nodes := tree.FlattenTree()
+
+		if len(nodes) != 1 {
+			t.Errorf("expected 1 node, got %d", len(nodes))
+		}
+	})
+}

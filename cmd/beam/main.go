@@ -1,16 +1,38 @@
 package main
 
 import (
-	"flag"
+	"beam/internal/core"
 	"fmt"
-	"path/filepath"
+	"os"
 )
 
 func main() {
-	flag.Parse()
+	args := os.Args[1:]
 
-	for _, path := range flag.Args() {
-		absPath, _ := filepath.Abs(path)
-		fmt.Println("Processing:", absPath)
+	parsedPaths, err := core.ParseArgs(args)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
+
+	filetree, err := core.BuildFiletree(parsedPaths)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error building filetree: %v\n", err)
+		os.Exit(1)
+	}
+
+	// flatten tree & create payload
+	nodes := filetree.FlattenTree()
+	payload := core.NewPayload(nodes, filetree.Root)
+
+	zipBytes, err := filetree.ToZipBytes()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error compressing: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("✓ Compressed to %d bytes\n", len(zipBytes))
+	fmt.Println("\nPayload ready for transmission!")
+
+	_ = payload
 }
