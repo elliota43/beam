@@ -160,7 +160,7 @@ func (h *Handler) saveUploadedFile(slug, uploadDir string, fh *multipart.FileHea
 	}
 
 	if n > h.MaxFileSize {
-		_ = os.Remove(storedName)
+		_ = os.Remove(storedPath)
 		return FileMetadata{}, FileResponse{}, fmt.Errorf("file too large: %s", fh.Filename)
 	}
 
